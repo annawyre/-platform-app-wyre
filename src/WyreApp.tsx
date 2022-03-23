@@ -11,7 +11,7 @@ import Image from "next/image";
 
 import LedgerLiveApi from "@ledgerhq/live-app-sdk";
 import { WindowMessageTransport } from "@ledgerhq/live-app-sdk";
-import type { Account, Currency } from "@ledgerhq/live-app-sdk";
+import type { Currency } from "@ledgerhq/live-app-sdk";
 
 import Button from "./components/Button";
 import Loader from "./components/Loader";
@@ -183,19 +183,12 @@ function useDeviceToken(): [string | null, (token: any) => void] {
 const getWyre = (
   env: string,
   deviceToken: string,
-  account: Account,
-  currencies: Currency[],
+  accountAddress: string,
+  currency: string,
   setIsSubmiting: (isSubmiting: boolean) => void
 ) => {
   const config = WYRE_CONFIG[env];
   const accountId = config?.accountId;
-  const currency = currencies.find(
-    (currency) => currency.id === account.currency
-  );
-
-  if (!currency) {
-    throw new Error("currency not found for account");
-  }
 
   // @ts-ignore
   const wyreInstance = new window.Wyre({
@@ -208,8 +201,8 @@ const getWyre = (
     },
     operation: {
       type: "onramp",
-      destCurrency: currency.ticker,
-      dest: `${account.currency}:${account.address.toLowerCase()}`,
+      destCurrency: currency,
+      dest: `${currency}:${accountAddress.toLowerCase()}`,
     },
   });
 
@@ -234,7 +227,17 @@ const getWyre = (
   return wyreInstance;
 };
 
-export function WyreApp() {
+type Props = {
+  accountAddress?: string;
+  language?: string;
+  fiatCurrencyId?: string;
+  cryptoCurrencyId?: string;
+  primaryColor?: string;
+  fiatAmount?: string;
+  cryptoAmount?: string;
+};
+
+export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
   const { colors } = useTheme();
   const api = useRef<LedgerLiveApi | null>(null);
   const [currencies, setCurrencies] = useState<Currency[]>([]);
@@ -245,6 +248,19 @@ export function WyreApp() {
     () => new URLSearchParams(window.location.search).get("env") || "prod",
     [window.location]
   );
+
+  useEffect(() => {
+    if (deviceToken && accountAddress && cryptoCurrencyId) {
+      const wyreInstance = getWyre(
+        env,
+        deviceToken,
+        accountAddress,
+        cryptoCurrencyId,
+        setIsSubmiting
+      );
+      wyreInstance.open();
+    }
+  }, [deviceToken, accountAddress, cryptoCurrencyId]);
 
   const submit = useCallback(async () => {
     if (api.current && deviceToken && currencies.length) {
@@ -257,8 +273,18 @@ export function WyreApp() {
         });
         const address = await api.current.receive(account.id);
 
-        if (account.address === address) {
-          getWyre(env, deviceToken, account, currencies, setIsSubmiting).open();
+        const currency = currencies.find(
+          (currency) => currency.id === account.currency
+        );
+
+        if (account.address === address && currency) {
+          getWyre(
+            env,
+            deviceToken,
+            account.address,
+            currency.ticker,
+            setIsSubmiting
+          ).open();
         }
       } catch (error) {
         setIsSubmiting(false);
