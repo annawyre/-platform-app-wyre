@@ -182,6 +182,7 @@ function useDeviceToken(): [string | null, (token: any) => void] {
 
 const getWyre = (
   env: string,
+  reservationId: string,
   deviceToken: string,
   accountAddress: string,
   currency: string,
@@ -193,6 +194,7 @@ const getWyre = (
   // @ts-ignore
   const wyreInstance = new window.Wyre({
     env: config.env,
+    reservation: reservationId,
     accountId,
     transferNotifyUrl: config.transferNotifyUrl || undefined,
     auth: {
@@ -200,7 +202,7 @@ const getWyre = (
       secretKey: deviceToken,
     },
     operation: {
-      type: "onramp",
+      type: "debitcard-hosted-dialog",
       destCurrency: currency,
       dest: `${currency}:${accountAddress.toLowerCase()}`,
     },
@@ -245,7 +247,7 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
   const [isSubmiting, setIsSubmiting] = useState(false);
   // next.js gives wrong data sometimes...so...
   const env = useMemo(
-    () => new URLSearchParams(window.location.search).get("env") || "prod",
+    () => new URLSearchParams(window.location.search).get("env") || "test",
     [window.location]
   );
 
@@ -267,6 +269,9 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
       try {
         setIsSubmiting(true);
 
+        const config = WYRE_CONFIG[env];
+        const accountId = config?.accountId;
+
         const account = await api.current.requestAccount({
           allowAddAccount: true,
           currencies: SUPPORTED_CURRENCIES,
@@ -277,9 +282,18 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
           (currency) => currency.id === account.currency
         );
 
+        const reservation = await axios.post(`https://api.testwyre.com/v3/orders/reserve`, {
+            "referrerAccountId": accountId
+        }, {headers:{
+            'Content-Type': 'application/json',
+            'Authorization': auth}
+        });
+        let reservationId = (reservation.data.reservation);
+
         if (account.address === address && currency) {
           getWyre(
             env,
+            reservationId,
             deviceToken,
             account.address,
             currency.ticker,
@@ -333,7 +347,6 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
         >
           <Panel>
             <Logo>
-              <Image src="/icons/wyre.svg" width={96} height={96} />
             </Logo>
             <Title>Wyre</Title>
             <List colors={colors}>

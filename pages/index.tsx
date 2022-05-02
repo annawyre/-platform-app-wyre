@@ -39,7 +39,7 @@ const Wyre = () => {
   return (
     <>
       <Head>
-        <script src="https://verify.sendwyre.com/js/verify-module-init.js"></script>
+        <script src="https://verify.sendwyre.com/js/verify-module-init-beta.js"></script>
       </Head>
       {mounted && (
         <WyreApp
