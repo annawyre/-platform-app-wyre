@@ -14,6 +14,7 @@
   "dependencies": {
     "@ledgerhq/live-app-sdk": "^0.5.0",
     "@types/react-transition-group": "^4.4.3",
+    "axios": "^0.27.2",
     "color": "^4.0.1",
     "modern-normalize": "^1.1.0",
     "next": "11.1.2",

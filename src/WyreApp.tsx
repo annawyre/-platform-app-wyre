@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import React, {
   useEffect,
   useRef,
@@ -5,6 +6,9 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+import axios from 'axios';
+
+
 import CSSTransition from "react-transition-group/CSSTransition";
 import styled, { useTheme } from "styled-components";
 import Image from "next/image";
@@ -43,7 +47,7 @@ const WYRE_CONFIG: { [key: string]: WyreConfig } = {
   },
   test: {
     env: "test",
-    accountId: "AC_Y2GAHJA6F9G",
+    accountId: "AC_HTQM9T3ZR3W",
   },
 };
 
@@ -271,6 +275,7 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
 
         const config = WYRE_CONFIG[env];
         const accountId = config?.accountId;
+        console.log('accountId accountId accountId', accountId)
 
         const account = await api.current.requestAccount({
           allowAddAccount: true,
@@ -282,13 +287,21 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
           (currency) => currency.id === account.currency
         );
 
-        const reservation = await axios.post(`https://api.testwyre.com/v3/orders/reserve`, {
+        const reservation1 = await axios.post(`https://api.testwyre.com/v3/orders/reserve`, {
             "referrerAccountId": accountId
         }, {headers:{
             'Content-Type': 'application/json',
-            'Authorization': auth}
+            'Authorization': 'Bearer SK-ZMPEY2V3-3NTVDDZ9-PDAECALF-9PYZWUXA'}
         });
-        let reservationId = (reservation.data.reservation);
+        console.log('ressssssssssserve',reservation1.data.reservation)
+
+
+
+
+
+
+
+        let reservationId = reservation1.data.reservation;
 
         if (account.address === address && currency) {
           getWyre(
