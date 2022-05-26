@@ -32,7 +32,7 @@ type ThemeProps = {
   };
 };
 
-const SUPPORTED_CURRENCIES = ["ethereum", "bitcoin"];
+const SUPPORTED_CURRENCIES = ["ethereum", "bitcoin", "polygon", "algorand", "stellar"];
 
 const WYRE_CONFIG: { [key: string]: WyreConfig } = {
   prod: {
@@ -207,8 +207,8 @@ const getWyre = (
     },
     operation: {
       type: "debitcard-hosted-dialog",
-      destCurrency: currency,
-      dest: `${currency}:${accountAddress.toLowerCase()}`,
+      // destCurrency: currency,
+      // dest: `${currency}:${accountAddress.toLowerCase()}`,
     },
   });
 
@@ -249,6 +249,7 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [deviceToken /*, updateToken*/] = useDeviceToken();
   const [isSubmiting, setIsSubmiting] = useState(false);
+  // const [accountAddress] = useState<Account[]>([]);
   // next.js gives wrong data sometimes...so...
   const env = useMemo(
     () => new URLSearchParams(window.location.search).get("env") || "test",
@@ -265,6 +266,7 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
         setIsSubmiting
       );
       wyreInstance.open();
+      
     }
   }, [deviceToken, accountAddress, cryptoCurrencyId]);
 
@@ -276,6 +278,7 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
         const config = WYRE_CONFIG[env];
         const accountId = config?.accountId;
         console.log('accountId accountId accountId', accountId)
+        console.log('accountAddress accountAddress accountAddress accountAddress', accountAddress)
 
         const account = await api.current.requestAccount({
           allowAddAccount: true,
@@ -286,14 +289,30 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
         const currency = currencies.find(
           (currency) => currency.id === account.currency
         );
+        const currency1=currency
+
+
+
+
+        const preSRN = currency?.ticker == 'MATIC' ? `${currency?.ticker.toLowerCase()}` : `${currency?.family}`;
+        console.log('preSRN preSRN preSRN preSRN', preSRN)
+
+
+
+        console.log('account.address account.address account.address account.address', account.address)
 
         const reservation1 = await axios.post(`https://api.testwyre.com/v3/orders/reserve`, {
-            "referrerAccountId": accountId
+            "referrerAccountId": accountId,
+            "dest": `${preSRN}:${account.address}`,
+            "destCurrency": currency?.ticker,
+            "lockFields":['dest','destCurrency']
         }, {headers:{
             'Content-Type': 'application/json',
             'Authorization': 'Bearer SK-ZMPEY2V3-3NTVDDZ9-PDAECALF-9PYZWUXA'}
         });
         console.log('ressssssssssserve',reservation1.data.reservation)
+        console.log('currencycurrency currency currency currency', currency)
+
 
 
 

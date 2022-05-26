@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import React, { useEffect, useState } from "react";
 import Head from "next/head";
 
@@ -30,6 +31,8 @@ const Wyre = () => {
     fiatAmount,
     cryptoAmount,
   } = router.query as QueryParams;
+
+
 
   useEffect(() => {
     setMounted(true);
