@@ -320,19 +320,10 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
 
 
 
-        let reservationId = reservation1.data.reservation;
+        let reservationUrl = reservation1.data.url;
 
         if (account.address === address && currency) {
-          const wyreObject = getWyre(
-            env,
-            reservationId,
-            deviceToken,
-            account.address,
-            currency.ticker,
-            setIsSubmiting
-          )
-          console.log('What are we opening???', wyreObject)
-          wyreObject.open();
+          window.location.replace(reservationUrl)
         }
       } catch (error) {
         setIsSubmiting(false);
