@@ -206,7 +206,7 @@ const getWyre = (
       secretKey: deviceToken,
     },
     operation: {
-      type: "debitcard-hosted-dialog",
+      type: "debitcard-hosted",
       // destCurrency: currency,
       // dest: `${currency}:${accountAddress.toLowerCase()}`,
     },
@@ -323,14 +323,16 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
         let reservationId = reservation1.data.reservation;
 
         if (account.address === address && currency) {
-          getWyre(
+          const wyreObject = getWyre(
             env,
             reservationId,
             deviceToken,
             account.address,
             currency.ticker,
             setIsSubmiting
-          ).open();
+          )
+          console.log('What are we opening???', wyreObject)
+          wyreObject.open();
         }
       } catch (error) {
         setIsSubmiting(false);
