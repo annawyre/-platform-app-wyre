@@ -376,16 +376,11 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
             <Title>Wyre</Title>
             <List colors={colors}>
               <li>
-                <span>Buy Bitcoin, Ethereum and more crypto safely</span>
+                <span>Buy Bitcoin, Ethereum, Polygon, Stellar, or Algorand securely and safely</span>
               </li>
+
               <li>
-                <span>Only 🇺🇸 bank account</span>
-              </li>
-              <li>
-                <span>ACH transfer / No credit & debit cards </span>
-              </li>
-              <li>
-                <span>USD support only</span>
+                <span>Use Debit/Credit Cards or Bank Accounts</span>
               </li>
             </List>
             {/* <input type="text" value={deviceToken || ""} onChange={handleTokenChange} /> */}
