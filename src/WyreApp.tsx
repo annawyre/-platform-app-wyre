@@ -24,6 +24,7 @@ type WyreConfig = {
   env: string;
   accountId?: string;
   transferNotifyUrl?: string;
+  buyUrl?: string;
 };
 
 type ThemeProps = {
@@ -40,14 +41,17 @@ const WYRE_CONFIG: { [key: string]: WyreConfig } = {
     accountId: "AC_UU28B4A64QA",
     transferNotifyUrl:
       "https://hooks.stitchdata.com/v1/clients/167870/token/33763f1bac7da4fe839aadc5462f7b4e41800de30080cf666fe826c0b9a1a649",
+    buyUrl: "https://pay.sendwyre.com/purchase"
   },
   staging: {
     env: "prod",
     accountId: "AC_32F8LN6LYU9", // Real prod environment, but linked to an account for testing purpose
+    buyUrl: "https://pay.sendwyre.com/purchase"
   },
   test: {
     env: "test",
     accountId: "AC_HTQM9T3ZR3W",
+    buyUrl: "https://pay.testwyre.com/purchase"
   },
 };
 
@@ -186,7 +190,6 @@ function useDeviceToken(): [string | null, (token: any) => void] {
 
 const getWyre = (
   env: string,
-  reservationId: string,
   deviceToken: string,
   accountAddress: string,
   currency: string,
@@ -198,7 +201,6 @@ const getWyre = (
   // @ts-ignore
   const wyreInstance = new window.Wyre({
     env: config.env,
-    reservation: reservationId,
     accountId,
     transferNotifyUrl: config.transferNotifyUrl || undefined,
     auth: {
@@ -255,6 +257,7 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
     () => new URLSearchParams(window.location.search).get("env") || "test",
     [window.location]
   );
+  console.log(window.location);
 
   useEffect(() => {
     if (deviceToken && accountAddress && cryptoCurrencyId) {
@@ -275,10 +278,8 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
       try {
         setIsSubmiting(true);
 
-        const config = WYRE_CONFIG[env];
+        const config = WYRE_CONFIG["prod"];
         const accountId = config?.accountId;
-        console.log('accountId accountId accountId', accountId)
-        console.log('accountAddress accountAddress accountAddress accountAddress', accountAddress)
 
         const account = await api.current.requestAccount({
           allowAddAccount: true,
@@ -289,41 +290,23 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
         const currency = currencies.find(
           (currency) => currency.id === account.currency
         );
-        const currency1=currency
-
-
-
-
         const preSRN = currency?.ticker == 'MATIC' ? `${currency?.ticker.toLowerCase()}` : `${currency?.family}`;
-        console.log('preSRN preSRN preSRN preSRN', preSRN)
 
-
-
-        console.log('account.address account.address account.address account.address', account.address)
-
-        const reservation1 = await axios.post(`https://api.testwyre.com/v3/orders/reserve`, {
-            "referrerAccountId": accountId,
-            "dest": `${preSRN}:${account.address}`,
-            "destCurrency": currency?.ticker,
-            "lockFields":['dest','destCurrency']
-        }, {headers:{
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer SK-ZMPEY2V3-3NTVDDZ9-PDAECALF-9PYZWUXA'}
-        });
-        console.log('ressssssssssserve',reservation1.data.reservation)
-        console.log('currencycurrency currency currency currency', currency)
-
-
-
-
-
-
-
-
-        let reservationUrl = reservation1.data.url;
+        const buyUrl = new URL(config.buyUrl!);
+        const queryData = {
+          'accountId': accountId!,
+          'dest': `${preSRN}:${account.address}`,
+          'destCurrency': currency?.ticker!,
+          'lockFields': "dest,destCurrency",
+          'redirectUrl': window.location.href,
+          'autoRedirect': "false",
+          'failreRedirectUrl': window.location.href}
+        for (let d in queryData) {
+          buyUrl.searchParams.append(d, queryData[d as keyof typeof queryData]);
+        }
 
         if (account.address === address && currency) {
-          window.location.replace(reservationUrl)
+          window.location.replace(buyUrl)
         }
       } catch (error) {
         setIsSubmiting(false);
