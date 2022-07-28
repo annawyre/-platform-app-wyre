@@ -9,7 +9,6 @@ import React, {
 
 import CSSTransition from "react-transition-group/CSSTransition";
 import styled, { useTheme } from "styled-components";
-import Image from "next/image";
 
 import LedgerLiveApi from "@ledgerhq/live-app-sdk";
 import { WindowMessageTransport } from "@ledgerhq/live-app-sdk";
@@ -186,53 +185,6 @@ function useDeviceToken(): [string | null, (token: any) => void] {
   return [deviceToken, updateToken];
 }
 
-const getWyre = (
-  env: string,
-  deviceToken: string,
-  accountAddress: string,
-  currency: string,
-  setIsSubmiting: (isSubmiting: boolean) => void
-) => {
-  const config = WYRE_CONFIG[env];
-  const accountId = config?.accountId;
-
-  // @ts-ignore
-  const wyreInstance = new window.Wyre({
-    env: config.env,
-    accountId,
-    transferNotifyUrl: config.transferNotifyUrl || undefined,
-    auth: {
-      type: "secretKey",
-      secretKey: deviceToken,
-    },
-    operation: {
-      type: "debitcard-hosted",
-      // destCurrency: currency,
-      // dest: `${currency}:${accountAddress.toLowerCase()}`,
-    },
-  });
-
-  wyreInstance.on("close", (error: Error | Record<string, unknown> | null) => {
-    // When closing, it returns an empty object.
-    if (error !== null && Object.keys(error).length) {
-      console.error("error!", error);
-    } else {
-      console.log("closed!");
-    }
-    setIsSubmiting(false);
-  });
-
-  wyreInstance.on("complete", () => {
-    console.log("complete!");
-  });
-
-  wyreInstance.on("ready", () => {
-    setIsSubmiting(false);
-  });
-
-  return wyreInstance;
-};
-
 type Props = {
   accountAddress?: string;
   language?: string;
@@ -243,7 +195,7 @@ type Props = {
   cryptoAmount?: string;
 };
 
-export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
+export function WyreApp({}: Props) {
   const { colors } = useTheme();
   const api = useRef<LedgerLiveApi | null>(null);
   const [currencies, setCurrencies] = useState<Currency[]>([]);
@@ -256,20 +208,6 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
     [window.location]
   );
   console.log(window.location);
-
-  useEffect(() => {
-    if (deviceToken && accountAddress && cryptoCurrencyId) {
-      const wyreInstance = getWyre(
-        env,
-        deviceToken,
-        accountAddress,
-        cryptoCurrencyId,
-        setIsSubmiting
-      );
-      wyreInstance.open();
-      
-    }
-  }, [deviceToken, accountAddress, cryptoCurrencyId]);
 
   const submit = useCallback(async () => {
     if (api.current && deviceToken && currencies.length) {
@@ -310,7 +248,7 @@ export function WyreApp({ accountAddress, cryptoCurrencyId }: Props) {
         setIsSubmiting(false);
       }
     }
-  }, [getWyre, env, api.current, deviceToken, currencies]);
+  }, [env, api.current, deviceToken, currencies]);
 
   useEffect(() => {
     const llapi = new LedgerLiveApi(new WindowMessageTransport());
