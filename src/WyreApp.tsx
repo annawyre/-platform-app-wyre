@@ -6,8 +6,6 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import axios from 'axios';
-
 
 import CSSTransition from "react-transition-group/CSSTransition";
 import styled, { useTheme } from "styled-components";
