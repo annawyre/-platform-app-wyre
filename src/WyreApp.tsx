@@ -202,7 +202,7 @@ export function WyreApp({}: Props) {
   const [deviceToken /*, updateToken*/] = useDeviceToken();
   const [isSubmiting, setIsSubmiting] = useState(false);
   // const [accountAddress] = useState<Account[]>([]);
-  // next.js gives wrong data sometimes...so...
+  // next.js gives wrong data sometimes...so... test
   const env = useMemo(
     () => new URLSearchParams(window.location.search).get("env") || "test",
     [window.location]
