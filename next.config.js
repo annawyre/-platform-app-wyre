@@ -18,10 +18,6 @@ module.exports = {
               "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version",
           },
           {
-            key: "X-Frame-Options",
-            value: "SAMEORIGIN"
-          },
-          {
             key: "Content-Security-Policy",
             value: "frame-src 'self';"
           },
